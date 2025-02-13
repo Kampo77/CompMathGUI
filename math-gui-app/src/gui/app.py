@@ -45,6 +45,21 @@ def root_finding_methods(params):
     
     root_newton = root_scalar(f, method='newton', x0=(a+b)/2, fprime=df)
     
+    # Plot the function and roots
+    x = np.linspace(a, b, 100)
+    y = f(x)
+    plt.figure()
+    plt.plot(x, y, label="f(x) = log(x) - x/10")
+    plt.axhline(0, color='black', linewidth=1)
+    plt.axvline(root_false.root, color='red', linestyle='--', label=f"False Position Root: {root_false.root:.6f}")
+    plt.axvline(root_newton.root, color='blue', linestyle='--', label=f"Newton-Raphson Root: {root_newton.root:.6f}")
+    plt.grid(True)
+    plt.title("Root-Finding Methods")
+    plt.xlabel("x")
+    plt.ylabel("f(x)")
+    plt.legend()
+    plt.show()
+    
     return (f"False Position Method:\n"
             f"Root = {root_false.root:.6f}\n"
             f"Iterations = {root_false.iterations}\n"
@@ -65,6 +80,7 @@ def relaxation_method(params):
     x = np.zeros(len(b))
     max_iter = 100
     tol = 1e-6
+    errors = []
     
     for iter in range(max_iter):
         x_old = x.copy()
@@ -73,8 +89,20 @@ def relaxation_method(params):
             sum2 = np.dot(A[i, i+1:], x_old[i+1:])
             x[i] = (1 - omega) * x_old[i] + (omega / A[i, i]) * (b[i] - sum1 - sum2)
         
-        if np.allclose(x, x_old, rtol=tol):
+        error = np.linalg.norm(x - x_old)
+        errors.append(error)
+        if error < tol:
             break
+    
+    # Plot the convergence
+    plt.figure()
+    plt.plot(errors, label="Convergence of Relaxation Method")
+    plt.yscale('log')
+    plt.xlabel("Iteration")
+    plt.ylabel("Error")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
     
     return f"Solution:\nx = {x[0]:.6f}\ny = {x[1]:.6f}\nz = {x[2]:.6f}\nIterations: {iter+1}"
 
@@ -87,17 +115,28 @@ def power_method(params):
     x = np.ones(n)
     max_iter = 100
     tol = 1e-6
+    eigenvalues = []
     
     for i in range(max_iter):
         x_new = A @ x
         lambda_new = np.max(np.abs(x_new))
         x_new = x_new / lambda_new
+        eigenvalues.append(lambda_new)
         
         if np.allclose(x, x_new, rtol=tol):
             break
             
         x = x_new
-        
+    
+    # Plot the convergence of the eigenvalue
+    plt.figure()
+    plt.plot(eigenvalues, label="Convergence of Eigenvalue")
+    plt.xlabel("Iteration")
+    plt.ylabel("Eigenvalue")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+    
     return f"Largest eigenvalue: {lambda_new:.6f}\nIterations: {i+1}"
 
 def exponential_curve_fitting(params):
@@ -188,9 +227,22 @@ def weddles_rule(params):
     from scipy import integrate
     exact_result, _ = integrate.quad(lambda x: eval(func_expr, {"x": x, "np": np}), a, b)
     
+    # Plot the function and the area under the curve
+    x_plot = np.linspace(a, b, 100)
+    y_plot = np.array([eval(func_expr, {"x": val, "np": np}) for val in x_plot])
+    plt.figure()
+    plt.plot(x_plot, y_plot, label=f"f(x) = {func_expr}")
+    plt.fill_between(x_plot, y_plot, alpha=0.3)
+    plt.title("Weddle's Rule Integration")
+    plt.xlabel("x")
+    plt.ylabel("f(x)")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+    
     return (f"Weddle's Rule result: {result:.6f}\n"
             f"Exact result: {exact_result:.6f}\n"
-            f"Absolute error: {abs(result-exact_result)::.6f}")
+            f"Absolute error: {abs(result-exact_result):.6f}")
 
 MANUAL_METHODS = [
     "Graphical Method",
