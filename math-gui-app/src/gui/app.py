@@ -25,7 +25,7 @@ def graphical_method(params):
             "The roots are approximately 0.5, 1.5, and 3.5.")
 
 def root_finding_methods(params):
-    import numpy as np
+    
     import matplotlib.pyplot as plt
     from scipy.optimize import root_scalar
     
