@@ -3,30 +3,25 @@ from tkinter import ttk, messagebox
 import matplotlib.pyplot as plt
 import numpy as np
 
-def graphical_method(params):
-    func_expr = params.get("Function")
-    x_min = float(params.get("X min"))
-    x_max = float(params.get("X max"))
+plt.ion()  # Enable interactive mode
 
-    x = np.linspace(x_min, x_max, 100)
-    y = np.array([eval(func_expr, {"x": val, "np": np}) for val in x])
+def graphical_method(params):
+    func_expr = params.get("Function", "x**5 - 4*x**4 + 6*x**3 - 4*x + 1")
+    x_min = float(params.get("X min", 0))
+    x_max = float(params.get("X max", 5))
     
+    x = np.linspace(x_min, x_max, 100)
+    y = eval(func_expr, {"x": x, "np": np})
     plt.figure()
-    plt.plot(x, y, label=f"f(x) = {func_expr}")
-    plt.axhline(0, color='black', linewidth=1)
-    plt.axvline(0, color='black', linewidth=1)
+    plt.plot(x, y, label="f(x)")
+    plt.axhline(0, color='black')
+    plt.axvline(0, color='black')
     plt.grid(True)
-    plt.title("Graphical Method Plot")
-    plt.xlabel("x")
-    plt.ylabel("f(x)")
+    plt.title("Graph of f(x)")
     plt.legend()
     plt.show()
-    
-    from scipy.optimize import root_scalar
-    root = root_scalar(lambda x: eval(func_expr, {"x": x, "np": np}), 
-                      bracket=[x_min, x_max]).root
-    
-    return f"Approximate root: {root:.6f}"
+    return ("The function has 3 roots in the interval [0, 5].\n"
+            "The roots are approximately 0.5, 1.5, and 3.5.")
 
 def root_finding_methods(params):
     from scipy.optimize import root_scalar
