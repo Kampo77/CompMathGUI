@@ -3,7 +3,8 @@ from tkinter import ttk, messagebox
 import matplotlib.pyplot as plt
 import numpy as np
 
-plt.ion()  # Enable interactive mode
+
+plt.ion()  
 
 def graphical_method(params):
     func_expr = params.get("Function", "x**5 - 4*x**4 + 6*x**3 - 4*x + 1")
@@ -24,45 +25,91 @@ def graphical_method(params):
             "The roots are approximately 0.5, 1.5, and 3.5.")
 
 def root_finding_methods(params):
-    from scipy.optimize import root_scalar
     import numpy as np
-
+    import matplotlib.pyplot as plt
+    from scipy.optimize import root_scalar
+    
+    
     def f(x):
         return np.log(x) - x/10
-
-    # False Position Method
-    a, b = map(float, params.get("Coefficients").split(','))
-    root_false = root_scalar(f, method='bisect', bracket=[a, b])
     
-    # Newton-Raphson Method
+    
     def df(x):
         return 1/x - 0.1
+
     
-    root_newton = root_scalar(f, method='newton', x0=(a+b)/2, fprime=df)
+    a, b = map(float, params.get("Coefficients").split(','))
+
+    # -----------------------------
+    # "False Position" via bisect
     
-    # Plot the function and roots
-    x = np.linspace(a, b, 100)
+    root_false = root_scalar(
+        f, 
+        method='bisect', 
+        bracket=[a, b],
+        maxiter=100,
+        xtol=1e-10  
+    )
+
+    # -----------------------------
+    # Newton-Raphson Method
+    
+    if a <= 1 <= b:
+        initial_guess = 1.0
+    else:
+        initial_guess = (a + b) / 2.0
+    
+    root_newton = root_scalar(
+        f,
+        fprime=df,
+        method='newton',
+        x0=initial_guess,
+        maxiter=100, 
+        rtol=1e-10  # optional: tighten tolerance
+    )
+
+    
+    x = np.linspace(a, b, 200)
     y = f(x)
+
     plt.figure()
     plt.plot(x, y, label="f(x) = log(x) - x/10")
     plt.axhline(0, color='black', linewidth=1)
-    plt.axvline(root_false.root, color='red', linestyle='--', label=f"False Position Root: {root_false.root:.6f}")
-    plt.axvline(root_newton.root, color='blue', linestyle='--', label=f"Newton-Raphson Root: {root_newton.root:.6f}")
+
+
+    plt.axvline(
+        root_false.root, 
+        color='red', 
+        linestyle='--', 
+        label=f"False Position Root: {root_false.root:.6f}"
+    )
+
+    plt.axvline(
+        root_newton.root, 
+        color='blue', 
+        linestyle='--', 
+        label=f"Newton-Raphson Root: {root_newton.root:.6f}"
+    )
+
     plt.grid(True)
     plt.title("Root-Finding Methods")
     plt.xlabel("x")
     plt.ylabel("f(x)")
     plt.legend()
     plt.show()
-    
-    return (f"False Position Method:\n"
-            f"Root = {root_false.root:.6f}\n"
-            f"Iterations = {root_false.iterations}\n"
-            f"Relative Error = {abs(root_false.root - root_newton.root)/abs(root_newton.root):.6e}\n\n"
-            f"Newton-Raphson Method:\n"
-            f"Root = {root_newton.root:.6f}\n"
-            f"Iterations = {root_newton.iterations}\n"
-            f"Relative Error = {abs(root_newton.root - root_false.root)/abs(root_newton.root):.6e}")
+    rel_err = abs(root_false.root - root_newton.root) / abs(root_newton.root)
+
+    return (
+        f"False Position Method:\n"
+        f"  Root = {root_false.root:.6f}\n"
+        f"  Iterations = {root_false.iterations}\n"
+        f"  Relative Error (vs. Newton) = {rel_err:.6e}\n\n"
+        
+        f"Newton-Raphson Method:\n"
+        f"  Root = {root_newton.root:.6f}\n"
+        f"  Iterations = {root_newton.iterations}\n"
+        f"  Relative Error (vs. False Pos.) = {rel_err:.6e}"
+    )
 
 def relaxation_method(params):
     matrix_str = params.get("Matrix")
@@ -308,7 +355,7 @@ class MathApp:
     def __init__(self, master):
         self.master = master
         master.title("Computational Mathematics - Final Project")
-        master.geometry("650x600")
+        master.geometry("800x600")
         master.configure(bg="#f0f0f0")
 
         self.mode_choice = tk.StringVar(value="manual")
